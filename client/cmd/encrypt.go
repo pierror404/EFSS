@@ -1,11 +1,7 @@
 package cmd
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -16,15 +12,6 @@ var encryptionKeyString string
 var encryptionKeysString string
 var encryptionOutputs string
 
-func generateRandomKey() []byte {
-	key := make([]byte, 32)
-	_, err := rand.Read(key)
-	if err != nil {
-		panic(err)
-	}
-	return key
-}
-
 func choosekey(key []byte, keys []string, index int) []byte {
 	if len(key) != 0 {
 		return key
@@ -32,29 +19,8 @@ func choosekey(key []byte, keys []string, index int) []byte {
 	return []byte(keys[index])
 }
 
-func encryptfile(filepath string, key []byte) ([]byte, error) {
-	text, err := os.ReadFile(filepath)
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	gcm, err := cipher.NewGCM(c)
-	if err != nil {
-		return nil, err
-	}
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, err
-	}
-	return gcm.Seal(nonce, nonce, text, nil), nil
-}
-
 var encrypt = &cobra.Command{
-	Use:   "encrypt [<filenames>]",
+	Use:   "encrypt <filenames> [flags]",
 	Short: "Encrypt one or more file (separated by ,) by AES-256",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -66,7 +32,7 @@ var encrypt = &cobra.Command{
 		if len(key) == 0 {
 			keys := strings.Split(encryptionKeysString, ",")
 			if len(keys) == 0 {
-				key = generateRandomKey()
+				key = generateRandom32BytesKey()
 			} else {
 				if len(keys) > len(filesPaths) {
 					fmt.Println("Warning: More keys provided than files. Extra keys will be ignored.")
@@ -74,7 +40,7 @@ var encrypt = &cobra.Command{
 				if len(keys) < len(filesPaths) {
 					fmt.Println("Warning: Number of keys provided does not match number of files. Using random keys for unmatched files.")
 					for i := len(keys); i < len(filesPaths); i++ {
-						generated_key := generateRandomKey()
+						generated_key := generateRandom32BytesKey()
 						keys = append(keys, string(generated_key))
 					}
 				}

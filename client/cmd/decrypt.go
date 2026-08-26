@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"fmt"
 	"os"
 	"strings"
@@ -14,42 +12,12 @@ var decryptionKeyString string
 var decryptionKeysString string
 var decryptionOutputs string
 
-func decryptfile(filepath string, key []byte) ([]byte, error) {
-	ciphertext, err := os.ReadFile(filepath)
-	if err != nil {
-		return nil, err
-	}
-	c, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	gcm, err := cipher.NewGCM(c)
-	if err != nil {
-		return nil, err
-	}
-	nonceSize := gcm.NonceSize()
-	if len(ciphertext) < nonceSize {
-		fmt.Println(err)
-	}
-
-	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return plaintext, nil
-}
-
 // decryptCmd represents the decrypt command
 var decryptCmd = &cobra.Command{
-	Use:   "decrypt [<filenames>]",
+	Use:   "decrypt <filenames> [-k <key> | -K <keys>] [flags]",
 	Short: "Decrypt one or more file (separated by ,) by AES-256, using the provided key for all files",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if !cmd.Flags().Changed("Keys") && !cmd.Flags().Changed("key") {
-			fmt.Println("At least one of --Keys or --key must be specified")
-			return
-		}
 		filesPaths := strings.Split(args[0], ",")
 		outputPaths := strings.Split(encryptionOutputs, ",")
 		if len(outputPaths) > len(filesPaths) {
@@ -62,14 +30,24 @@ var decryptCmd = &cobra.Command{
 		var keys []string
 		if len(key) == 0 {
 			keys = strings.Split(decryptionKeysString, ",")
-			if len(keys) != len(filesPaths) {
-				fmt.Println("Number of keys must match number of files")
-				return
-			}
-			for i := 0; i < len(keys); i++ {
-				if len(keys[i]) != 32 {
-					fmt.Printf("Key %d must be 32 bytes long\n", i+1)
+			if len(keys) == 0 {
+				fmt.Printf("Provide the 32 bytes key to decrypt all files: ")
+				fmt.Scanf("%s", &decryptionKeyString)
+				key = []byte(decryptionKeyString)
+				if len(key) != 32 {
+					fmt.Println("Key must be 32 bytes long")
 					return
+				}
+			} else {
+				if len(keys) != len(filesPaths) {
+					fmt.Println("Number of keys must match number of files")
+					return
+				}
+				for i := 0; i < len(keys); i++ {
+					if len(keys[i]) != 32 {
+						fmt.Printf("Key %d must be 32 bytes long\n", i+1)
+						return
+					}
 				}
 			}
 		} else {
