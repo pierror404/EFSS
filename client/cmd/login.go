@@ -14,7 +14,7 @@ func checkpasswd(password string) bool {
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
-	Use:   "login [username]",
+	Use:   "login <username>",
 	Short: "Login to EFSS with the provided username",
 	Long:  `You need to login to EFSS with a username before you can use the other commands.`,
 	Args:  cobra.ExactArgs(1),
