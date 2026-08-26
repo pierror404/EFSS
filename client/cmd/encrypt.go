@@ -12,6 +12,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var encryptionKeyString string
+var encryptionKeysString string
+var encryptionOutputs string
+
 func generateRandomKey() []byte {
 	key := make([]byte, 32)
 	_, err := rand.Read(key)
@@ -49,22 +53,18 @@ func encryptfile(filepath string, key []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, text, nil), nil
 }
 
-var keyString string
-var keysString string
-var outputs string
-
 var encrypt = &cobra.Command{
 	Use:   "encrypt [<filenames>]",
 	Short: "Encrypt one or more file (separated by ,) by AES-256",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		filesPaths := strings.Split(args[0], ",")
-		outputPaths := strings.Split(outputs, ",")
+		outputPaths := strings.Split(encryptionOutputs, ",")
 		var key []byte
-		key = []byte(keyString)
+		key = []byte(encryptionKeyString)
 		var keys []string
 		if len(key) == 0 {
-			keys := strings.Split(keysString, ",")
+			keys := strings.Split(encryptionKeysString, ",")
 			if len(keys) == 0 {
 				key = generateRandomKey()
 			} else {
@@ -117,8 +117,9 @@ var encrypt = &cobra.Command{
 }
 
 func init() {
-	encrypt.Flags().StringVarP(&keysString, "Keys", "K", "", "Keys for encryption (32 bytes separated by ,)")
-	encrypt.Flags().StringVarP(&keyString, "key", "k", "", "Key for encryption (32 bytes)")
-	encrypt.Flags().StringVarP(&outputs, "output", "o", "", "Output file paths (separated by ,)")
+	encrypt.Flags().StringVarP(&encryptionKeysString, "Keys", "K", "", "Keys for encryption (32 bytes separated by ,)")
+	encrypt.Flags().StringVarP(&encryptionKeyString, "key", "k", "", "Key for encryption (32 bytes)")
+	rootCmd.MarkFlagsMutuallyExclusive("Keys", "key")
+	encrypt.Flags().StringVarP(&encryptionOutputs, "output", "o", "", "Output file paths (separated by ,)")
 	rootCmd.AddCommand(encrypt)
 }
