@@ -42,7 +42,7 @@ func hashPassword(password, salt string) string {
 func Register(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "richiesta non valida", http.StatusBadRequest)
+		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
 
@@ -54,7 +54,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		req.Username, hash, salt, req.PublicKey,
 	)
 	if err != nil {
-		http.Error(w, "utente già esistente o errore DB", http.StatusConflict)
+		http.Error(w, "user already registered or DB error", http.StatusConflict)
 		return
 	}
 
@@ -70,12 +70,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		"SELECT password_hash, salt FROM users WHERE username = $1", req.Username,
 	).Scan(&storedHash, &salt)
 	if err != nil {
-		http.Error(w, "credenziali non valide", http.StatusUnauthorized)
+		http.Error(w, "wrong credentials", http.StatusUnauthorized)
 		return
 	}
 
 	if hashPassword(req.Password, salt) != storedHash {
-		http.Error(w, "credenziali non valide", http.StatusUnauthorized)
+		http.Error(w, "wrong credentials", http.StatusUnauthorized)
 		return
 	}
 
@@ -89,7 +89,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		token, req.Username, expiresAt,
 	)
 	if err != nil {
-		http.Error(w, "errore creazione sessione", http.StatusInternalServerError)
+		http.Error(w, "error while creating session", http.StatusInternalServerError)
 		return
 	}
 
@@ -101,7 +101,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 
 	_, err := db.DB.Exec("DELETE FROM sessions WHERE token = $1", token)
 	if err != nil {
-		http.Error(w, "errore durante il logout", http.StatusInternalServerError)
+		http.Error(w, "logout error", http.StatusInternalServerError)
 		return
 	}
 

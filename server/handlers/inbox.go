@@ -26,24 +26,24 @@ func SendMessage(w http.ResponseWriter, r *http.Request) {
 
 	var req SendRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "richiesta non valida", http.StatusBadRequest)
+		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
 
 	blob, err := base64.StdEncoding.DecodeString(req.EncryptedBlob)
 	if err != nil {
-		http.Error(w, "blob non valido", http.StatusBadRequest)
+		http.Error(w, "invalid blob", http.StatusBadRequest)
 		return
 	}
 	sig, err := base64.StdEncoding.DecodeString(req.Signature)
 	if err != nil {
-		http.Error(w, "firma non valida", http.StatusBadRequest)
+		http.Error(w, "invalid signature", http.StatusBadRequest)
 		return
 	}
 
 	tx, err := db.DB.Begin()
 	if err != nil {
-		http.Error(w, "errore DB", http.StatusInternalServerError)
+		http.Error(w, "DB error", http.StatusInternalServerError)
 		return
 	}
 
@@ -54,7 +54,7 @@ func SendMessage(w http.ResponseWriter, r *http.Request) {
 	)
 	if err != nil {
 		tx.Rollback()
-		http.Error(w, "errore inserimento messaggio", http.StatusInternalServerError)
+		http.Error(w, "error while writing message", http.StatusInternalServerError)
 		return
 	}
 	messageID, _ := res.LastInsertId()
@@ -63,7 +63,7 @@ func SendMessage(w http.ResponseWriter, r *http.Request) {
 		keyBytes, err := base64.StdEncoding.DecodeString(rec.EncryptedSymmetricKey)
 		if err != nil {
 			tx.Rollback()
-			http.Error(w, "chiave cifrata non valida per "+rec.Username, http.StatusBadRequest)
+			http.Error(w, "invalid key for "+rec.Username, http.StatusBadRequest)
 			return
 		}
 
@@ -74,13 +74,13 @@ func SendMessage(w http.ResponseWriter, r *http.Request) {
 		)
 		if err != nil {
 			tx.Rollback()
-			http.Error(w, "errore inserimento destinatario "+rec.Username, http.StatusInternalServerError)
+			http.Error(w, "error inserting recipient: "+rec.Username, http.StatusInternalServerError)
 			return
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		http.Error(w, "errore commit", http.StatusInternalServerError)
+		http.Error(w, "commit error", http.StatusInternalServerError)
 		return
 	}
 
@@ -104,7 +104,7 @@ func Inbox(w http.ResponseWriter, r *http.Request) {
 		username,
 	)
 	if err != nil {
-		http.Error(w, "errore DB", http.StatusInternalServerError)
+		http.Error(w, "DB error", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -113,14 +113,14 @@ func Inbox(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var item InboxItem
 		if err := rows.Scan(&item.MessageID, &item.Sender, &item.Filename); err != nil {
-			http.Error(w, "errore lettura risultati", http.StatusInternalServerError)
+			http.Error(w, "error while reading results", http.StatusInternalServerError)
 			return
 		}
 		items = append(items, item)
 	}
 
 	if err := rows.Err(); err != nil {
-		http.Error(w, "errore durante iterazione risultati", http.StatusInternalServerError)
+		http.Error(w, "results iteration error", http.StatusInternalServerError)
 		return
 	}
 
@@ -152,7 +152,7 @@ func Download(w http.ResponseWriter, r *http.Request) {
 	).Scan(&resp.Sender, &resp.Filename, &blob, &sig, &key)
 
 	if err != nil {
-		http.Error(w, "messaggio non trovato", http.StatusNotFound)
+		http.Error(w, "message not found", http.StatusNotFound)
 		return
 	}
 

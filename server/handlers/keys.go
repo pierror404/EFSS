@@ -20,7 +20,7 @@ func GetPublicKey(w http.ResponseWriter, r *http.Request) {
 		"SELECT public_key FROM users WHERE username = $1", username,
 	).Scan(&publicKey)
 	if err != nil {
-		http.Error(w, "utente non trovato", http.StatusNotFound)
+		http.Error(w, "user not found", http.StatusNotFound)
 		return
 	}
 
