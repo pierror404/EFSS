@@ -8,10 +8,13 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
+	"encoding/binary"
 	"encoding/pem"
 	"fmt"
 	"io"
+	"math"
 	"os"
+	"path/filepath"
 
 	"golang.org/x/crypto/argon2"
 )
@@ -191,7 +194,7 @@ func getPublicKeyByUsername(username string) (*rsa.PublicKey, error) {
 /*
  * SIGNING
  */
-func signFile(filepath string, privateKey *rsa.PrivateKey) ([]byte, error) {
+func signature(filepath string, privateKey *rsa.PrivateKey) ([]byte, error) {
 	data, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err
@@ -215,6 +218,95 @@ func signFile(filepath string, privateKey *rsa.PrivateKey) ([]byte, error) {
 	}
 
 	return signature, nil
+}
+
+func signFile(inputFilename string, outputFilename string, privateKey *rsa.PrivateKey) error {
+	// signature
+	signature, err := signature(inputFilename, privateKey)
+	if err != nil {
+		return err
+	}
+	// file content
+	fileContent, err := os.ReadFile(inputFilename)
+	if err != nil {
+		return err
+	}
+
+	// create output file
+	out, err := os.Create(outputFilename)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// write the output file
+	if err := writeSignedFile(
+		out,
+		filepath.Base(inputFilename),
+		fileContent,
+		signature,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func writeSignedFile(w io.Writer, filename string, content []byte, signature []byte) error {
+	/*
+		[4 byte]   Magic       "SIGN"
+		[2 byte]   Filename length
+		[N byte]   Filename
+		[8 byte]   File size
+		[N byte]   File content
+		[2 byte]   Signature length
+		[N byte]   Signature
+	*/
+	// MAGIC
+	if _, err := w.Write([]byte("SIGN")); err != nil {
+		return err
+	}
+
+	// FILENAME
+	filenameBytes := []byte(filename)
+	if len(filenameBytes) > math.MaxUint16 {
+		return fmt.Errorf("filename troppo lungo")
+	}
+	if err := binary.Write(
+		w,
+		binary.BigEndian,
+		uint16(len(filenameBytes)),
+	); err != nil {
+		return err
+	}
+	if _, err := w.Write(filenameBytes); err != nil {
+		return err
+	}
+	// FILE SIZE
+	if err := binary.Write(w, binary.BigEndian, uint64(len(content))); err != nil {
+		return err
+	}
+	// FILE CONTENT
+	if _, err := w.Write(content); err != nil {
+		return err
+	}
+	// SIGNATURE SIZE
+	if len(signature) > math.MaxUint16 {
+		return fmt.Errorf("firma troppo lunga")
+	}
+	if err := binary.Write(
+		w,
+		binary.BigEndian,
+		uint16(len(signature)),
+	); err != nil {
+		return err
+	}
+	// SIGNATURE
+	if _, err := w.Write(signature); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 /*

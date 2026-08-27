@@ -10,6 +10,7 @@ import (
 )
 
 var keypath string
+var signedoutputfile string
 
 // signCmd represents the sign command
 var signCmd = &cobra.Command{
@@ -18,11 +19,12 @@ var signCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		filepaths := strings.Split(args[0], ",")
+		outputpaths := strings.Split(encryptionOutputs, ",")
 		key := []byte(keypath)
 		if len(key) == 0 {
 			key = []byte("./keys/private.pem")
 		}
-		for _, filepath := range filepaths {
+		for i, filepath := range filepaths {
 			fmt.Printf("Password: ")
 			password, err := term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
@@ -37,23 +39,27 @@ var signCmd = &cobra.Command{
 				return
 			}
 
-			signed, err := signFile(filepath, privatekey)
-			if err != nil {
-				fmt.Printf("Error signing %s: %v\n", filepath, err)
-				continue
+			var outputfile string
+			if i < len(outputpaths) {
+				outputfile = outputpaths[i]
+			} else {
+				outputfile = filepath + ".signed"
 			}
-			err = os.WriteFile(filepath+".sig", signed, 0644)
+
+			err = signFile(filepath, outputfile, privatekey)
 			if err != nil {
 				fmt.Printf("Error saving signature for %s: %v\n", filepath, err)
 				continue
 			} else {
-				fmt.Printf("Signature for %s saved to %s.sig\n", filepath, filepath)
+				fmt.Printf("Signature for %s saved to %s\n", filepath, outputfile)
 			}
+
 		}
 	},
 }
 
 func init() {
 	signCmd.Flags().StringVarP(&keypath, "keypath", "-p", "", "filepath to the private key used for signing (if different from the default path './keys/private.pem')")
+	encrypt.Flags().StringVarP(&signedoutputfile, "output", "o", "", "Output file paths (separated by ,)")
 	rootCmd.AddCommand(signCmd)
 }
