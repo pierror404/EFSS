@@ -21,6 +21,12 @@ import (
 
 const saltSize = 16
 
+type SignedFile struct {
+	Filename  string
+	Content   []byte
+	Signature []byte
+}
+
 func generateRandom32BytesKey() []byte {
 	key := make([]byte, 32)
 	_, err := rand.Read(key)
@@ -312,13 +318,8 @@ func writeSignedFile(w io.Writer, filename string, content []byte, signature []b
 /*
  * VERIFY SIGNATURE
  */
-func verifyFile(filename string, signature []byte, publicKey *rsa.PublicKey) error {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	hash := sha256.Sum256(data)
+func verifySignature(content []byte, signature []byte, publicKey *rsa.PublicKey) error {
+	hash := sha256.Sum256(content)
 
 	return rsa.VerifyPSS(
 		publicKey,
@@ -330,4 +331,106 @@ func verifyFile(filename string, signature []byte, publicKey *rsa.PublicKey) err
 			Hash:       crypto.SHA256,
 		},
 	)
+}
+func verifyFile(filename string, publicKey *rsa.PublicKey) error {
+
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	signedFile, err := readSignedFile(file)
+	if err != nil {
+		return err
+	}
+
+	err = verifySignature(signedFile.Content, signedFile.Signature, publicKey)
+	if err != nil {
+		return fmt.Errorf("firma non valida: %w", err)
+	}
+
+	return nil
+}
+
+func readSignedFile(r io.Reader) (*SignedFile, error) {
+	/*
+		[4 byte]   Magic       "SIGN"
+		[2 byte]   Filename length
+		[N byte]   Filename
+		[8 byte]   File size
+		[N byte]   File content
+		[2 byte]   Signature length
+		[N byte]   Signature
+	*/
+	// MAGIC
+	magic := make([]byte, 4)
+
+	if _, err := io.ReadFull(r, magic); err != nil {
+		return nil, err
+	}
+
+	if string(magic) != "SIGN" {
+		return nil, fmt.Errorf("file non valido")
+	}
+
+	// FILENAME LENGTH
+	var filenameLen uint16
+
+	if err := binary.Read(
+		r,
+		binary.BigEndian,
+		&filenameLen,
+	); err != nil {
+		return nil, err
+	}
+
+	// FILENAME
+	filenameBytes := make([]byte, filenameLen)
+
+	if _, err := io.ReadFull(r, filenameBytes); err != nil {
+		return nil, err
+	}
+
+	// FILE SIZE
+	var fileSize uint64
+
+	if err := binary.Read(
+		r,
+		binary.BigEndian,
+		&fileSize,
+	); err != nil {
+		return nil, err
+	}
+
+	// FILE CONTENT
+	content := make([]byte, fileSize)
+
+	if _, err := io.ReadFull(r, content); err != nil {
+		return nil, err
+	}
+
+	// SIGNATURE LENGTH
+	var signatureLen uint16
+
+	if err := binary.Read(
+		r,
+		binary.BigEndian,
+		&signatureLen,
+	); err != nil {
+		return nil, err
+	}
+
+	// SIGNATURE
+	signature := make([]byte, signatureLen)
+
+	if _, err := io.ReadFull(r, signature); err != nil {
+		return nil, err
+	}
+
+	return &SignedFile{
+		Filename:  string(filenameBytes),
+		Content:   content,
+		Signature: signature,
+	}, nil
 }

@@ -25,7 +25,7 @@ var verifyCmd = &cobra.Command{
 			return
 		}
 		for _, filePath := range filesPaths {
-			err := verifyFile(filePath, nil, publicKey) // Assuming signature is obtained elsewhere
+			err := verifyFile(filePath, publicKey) // Assuming signature is obtained elsewhere
 			if err != nil {
 				fmt.Printf("Verification failed for file %s: %v\n", filePath, err)
 			} else {
