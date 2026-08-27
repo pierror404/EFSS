@@ -1,16 +1,14 @@
 package cmd
 
 import (
+	"EFSS/client/api"
+	conf "EFSS/client/config"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
-
-func checkpasswd(password string) bool {
-	return true
-}
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
@@ -23,16 +21,17 @@ var loginCmd = &cobra.Command{
 		fmt.Printf("Password for user %s: ", username)
 		password, err := term.ReadPassword(int(os.Stdin.Fd()))
 		if err != nil {
-			fmt.Println("Error: ", err)
+			fmt.Println("Error: " + err.Error())
 			return
 		}
-
-		//Check password
-		if checkpasswd(string(password)) {
-			fmt.Println()
-			fmt.Println("Login successful for ", username)
-		} else {
-			fmt.Println("Invalid password for user ", username)
+		token, err := api.Login(username, string(password))
+		if err != nil {
+			fmt.Println("Login failed!")
+			fmt.Println(err)
+			return
+		}
+		if err := conf.SaveToken(username, token); err != nil {
+			fmt.Println("error while saving credentials: " + err.Error())
 		}
 	},
 }

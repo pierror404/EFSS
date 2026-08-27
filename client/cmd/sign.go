@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	conf "EFSS/client/config"
 	"fmt"
 	"os"
 	"strings"
@@ -22,13 +23,18 @@ var signCmd = &cobra.Command{
 		outputpaths := strings.Split(encryptionOutputs, ",")
 		key := []byte(keypath)
 		if len(key) == 0 {
-			key = []byte("./keys/private.pem")
+			privateKeyPath, err := conf.PrivateKeyPath()
+			if err != nil {
+				fmt.Println("Error reaching default private key file")
+				return
+			}
+			key = []byte(privateKeyPath)
 		}
 		for i, filepath := range filepaths {
 			fmt.Printf("Password: ")
 			password, err := term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
-				cmd.Println("Error reading password")
+				fmt.Println("Error reading password")
 				return
 			}
 			fmt.Println()
@@ -59,7 +65,7 @@ var signCmd = &cobra.Command{
 }
 
 func init() {
-	signCmd.Flags().StringVarP(&keypath, "keypath", "-p", "", "filepath to the private key used for signing (if different from the default path './keys/private.pem')")
+	signCmd.Flags().StringVarP(&keypath, "keypath", "-p", "", "filepath to the private key used for signing (if different from the default path 'HOMEDIR/.efss/key/private.key.enc')")
 	encrypt.Flags().StringVarP(&signedoutputfile, "output", "o", "", "Output file paths (separated by ,)")
 	rootCmd.AddCommand(signCmd)
 }

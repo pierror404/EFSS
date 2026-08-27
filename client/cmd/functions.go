@@ -125,7 +125,8 @@ func generatekeys(path string, password []byte) error {
 		return err
 	}
 	defer encryptedFile.Close()
-	ciphertext, err := encryptfile(path+"/private.key", key)
+	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
+	ciphertext, err := encryption(privateKeyBytes, key)
 	if err != nil {
 		return err
 	}

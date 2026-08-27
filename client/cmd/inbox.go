@@ -1,10 +1,7 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
+	"EFSS/client/api"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -13,28 +10,26 @@ import (
 // inboxCmd represents the inbox command
 var inboxCmd = &cobra.Command{
 	Use:   "inbox",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Shows all the incoming messages not yet received",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("inbox called")
+		items, err := api.GetInbox()
+		if err != nil {
+			fmt.Println("Error")
+			return
+		}
+
+		if len(items) == 0 {
+			fmt.Println("No new messages.")
+			return
+		}
+
+		fmt.Println("ID\tSender\tFile")
+		for _, item := range items {
+			fmt.Printf("%d\t%s\t%s\n", item.MessageID, item.Sender, item.Filename)
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(inboxCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// inboxCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// inboxCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
