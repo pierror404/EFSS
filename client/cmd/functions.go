@@ -194,6 +194,7 @@ func loadPrivateKey(filename string, password []byte) (*rsa.PrivateKey, error) {
  */
 func getPublicKeyByUsername(username string) (*rsa.PublicKey, error) {
 	// Implementation for loading public key by username
+	// TODO
 	return nil, nil
 }
 
@@ -332,25 +333,26 @@ func verifySignature(content []byte, signature []byte, publicKey *rsa.PublicKey)
 		},
 	)
 }
-func verifyFile(filename string, publicKey *rsa.PublicKey) error {
+
+func verifyFile(filename string, publicKey *rsa.PublicKey) (*SignedFile, error) {
 
 	file, err := os.Open(filename)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer file.Close()
 
 	signedFile, err := readSignedFile(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = verifySignature(signedFile.Content, signedFile.Signature, publicKey)
 	if err != nil {
-		return fmt.Errorf("firma non valida: %w", err)
+		return signedFile, fmt.Errorf("firma non valida: %w", err)
 	}
 
-	return nil
+	return signedFile, nil
 }
 
 func readSignedFile(r io.Reader) (*SignedFile, error) {
@@ -433,4 +435,19 @@ func readSignedFile(r io.Reader) (*SignedFile, error) {
 		Content:   content,
 		Signature: signature,
 	}, nil
+}
+
+/*
+ * EXTRACT FILE
+ */
+func extractAndVerifyFile(signedFilename string, publicKey *rsa.PublicKey) error {
+	signedFile, err := verifyFile(signedFilename, publicKey)
+	if err != nil {
+		return fmt.Errorf("firma non valida: %w", err)
+	}
+	return os.WriteFile(
+		signedFile.Filename,
+		signedFile.Content,
+		0644,
+	)
 }
