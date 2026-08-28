@@ -67,6 +67,6 @@ var signCmd = &cobra.Command{
 
 func init() {
 	signCmd.Flags().StringVarP(&keypath, "keypath", "-p", "", "filepath to the private key used for signing (if different from the default path 'HOMEDIR/.efss/key/private.key.enc')")
-	encrypt.Flags().StringVarP(&signedoutputfile, "output", "o", "", "Output file paths (separated by ,)")
+	signCmd.Flags().StringVarP(&signedoutputfile, "output", "o", "", "Output file paths (separated by ,)")
 	rootCmd.AddCommand(signCmd)
 }

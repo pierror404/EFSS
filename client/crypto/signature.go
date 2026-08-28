@@ -17,12 +17,7 @@ import (
  * SIGN
  */
 
-func Sign(filepath string, privateKey *rsa.PrivateKey) ([]byte, error) {
-	data, err := os.ReadFile(filepath)
-	if err != nil {
-		return nil, err
-	}
-
+func Sign(data []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
 	hash := sha256.Sum256(data)
 
 	signature, err := rsa.SignPSS(
@@ -44,13 +39,15 @@ func Sign(filepath string, privateKey *rsa.PrivateKey) ([]byte, error) {
 }
 
 func SignFile(inputFilename string, outputFilename string, privateKey *rsa.PrivateKey) error {
-	// signature
-	signature, err := Sign(inputFilename, privateKey)
+
+	// file content
+	fileContent, err := os.ReadFile(inputFilename)
 	if err != nil {
 		return err
 	}
-	// file content
-	fileContent, err := os.ReadFile(inputFilename)
+
+	// signature
+	signature, err := Sign(fileContent, privateKey)
 	if err != nil {
 		return err
 	}

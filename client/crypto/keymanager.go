@@ -3,8 +3,10 @@ package crypto
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
 
@@ -65,7 +67,7 @@ func GenerateAsymmetricKeys(path string, password []byte) error {
 		Type:  "PUBLIC KEY",
 		Bytes: publicBytes,
 	})
-}
+} // da modificare mandando pub key al server
 
 func GenerateRandomSymmetricKey() []byte {
 	key := make([]byte, 32)
@@ -96,7 +98,7 @@ func LoadPrivateKey(filename string, password []byte) (*rsa.PrivateKey, error) {
 	)
 	privateBytes, err := Decrypt(remaining, key)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Wrong Password!!")
 	}
 	privateKey, err := x509.ParsePKCS1PrivateKey(privateBytes)
 	if err != nil {
@@ -106,8 +108,50 @@ func LoadPrivateKey(filename string, password []byte) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func PublicKeyByUsername(username string) (*rsa.PublicKey, error) {
-	// Implementation for loading public key by username
-	// TODO
-	return nil, nil
+func ParsePublicKey(raw []byte) (*rsa.PublicKey, error) {
+	pubAny, err := x509.ParsePKIXPublicKey(raw)
+	if err != nil {
+		return nil, errors.New("chiave pubblica non valida")
+	}
+
+	rsaPub, ok := pubAny.(*rsa.PublicKey)
+	if !ok {
+		return nil, errors.New("la chiave pubblica non è di tipo RSA")
+	}
+
+	return rsaPub, nil
+}
+
+func WrapSymmetricKey(symmetricKey []byte, recipientPubKey *rsa.PublicKey) ([]byte, error) {
+	ciphertext, err := rsa.EncryptOAEP(
+		sha256.New(),
+		rand.Reader,
+		recipientPubKey,
+		symmetricKey,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ciphertext, nil
+}
+
+func UnwrapSymmetricKey(privateKeyFilename string, password []byte, wrapped []byte) ([]byte, error) {
+	privKey, err := LoadPrivateKey(privateKeyFilename, password)
+	if err != nil {
+		return nil, err
+	}
+
+	symmetricKey, err := rsa.DecryptOAEP(
+		sha256.New(),
+		rand.Reader,
+		privKey,
+		wrapped,
+		nil,
+	)
+	if err != nil {
+		return nil, errors.New("decifratura fallita: chiave privata errata o dati corrotti")
+	}
+
+	return symmetricKey, nil
 }

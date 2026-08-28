@@ -4,7 +4,9 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"EFSS/client/api"
 	"EFSS/client/crypto"
+	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -20,13 +22,23 @@ var verifyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		filesPaths := strings.Split(args[0], ",")
 		username := args[1]
-		publicKey, err := crypto.PublicKeyByUsername(username)
+		pubKeyB64, err := api.GetPublicKey(username)
 		if err != nil {
-			fmt.Printf("Error loading public key for user %s: %v\n", username, err)
+			fmt.Println("Error getting public key by username.")
+			return
+		}
+		pubKeyBytes, err := base64.StdEncoding.DecodeString(pubKeyB64)
+		if err != nil {
+			fmt.Println("Invalid public key for %s" + username)
+			return
+		}
+		pubKey, err := crypto.ParsePublicKey(pubKeyBytes)
+		if err != nil {
+			fmt.Println("Public key parsing error for " + username + ": " + err.Error())
 			return
 		}
 		for _, filePath := range filesPaths {
-			_, err := crypto.VerifyFile(filePath, publicKey) // Assuming signature is obtained elsewhere
+			_, err := crypto.VerifyFile(filePath, pubKey) // Assuming signature is obtained elsewhere
 			if err != nil {
 				fmt.Printf("Verification failed for file %s: %v\n", filePath, err)
 			} else {

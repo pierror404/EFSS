@@ -20,6 +20,6 @@ var extractCmd = &cobra.Command{
 func init() {
 	extractCmd.Flags().StringVarP(&CSkeysToRebuild, "Keys", "K", "", "Keys for encryption (32 bytes separated by ,)")
 	extractCmd.Flags().StringVarP(&keyToRebuild, "key", "k", "", "Key for encryption (32 bytes)")
-	rootCmd.MarkFlagsMutuallyExclusive("Keys", "key")
+	extractCmd.MarkFlagsMutuallyExclusive("Keys", "key")
 	rootCmd.AddCommand(extractCmd)
 }

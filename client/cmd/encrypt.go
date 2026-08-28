@@ -52,11 +52,9 @@ var encrypt = &cobra.Command{
 					}
 				}
 			}
-		} else {
-			if len(key) != 32 {
-				fmt.Printf("Key must be 32 bytes long\n")
-				return nil
-			}
+		} else if len(key) != 32 {
+			fmt.Printf("Key must be 32 bytes long\n")
+			return nil
 		}
 		if len(outputPaths) > len(filesPaths) {
 			fmt.Println("Warning: More output paths than input files. Extra output paths will be ignored.")
@@ -86,7 +84,7 @@ var encrypt = &cobra.Command{
 func init() {
 	encrypt.Flags().StringVarP(&encryptionKeysString, "Keys", "K", "", "Keys for encryption (32 bytes separated by ,)")
 	encrypt.Flags().StringVarP(&encryptionKeyString, "key", "k", "", "Key for encryption (32 bytes)")
-	rootCmd.MarkFlagsMutuallyExclusive("Keys", "key")
+	encrypt.MarkFlagsMutuallyExclusive("Keys", "key")
 	encrypt.Flags().StringVarP(&encryptionOutputs, "output", "o", "", "Output file paths (separated by ,)")
 	rootCmd.AddCommand(encrypt)
 }

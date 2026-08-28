@@ -3,7 +3,6 @@ package crypto
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"fmt"
 	"os"
 )
 
@@ -18,13 +17,13 @@ func Decrypt(ciphertext []byte, key []byte) ([]byte, error) {
 	}
 	nonceSize := gcm.NonceSize()
 	if len(ciphertext) < nonceSize {
-		fmt.Println(err)
+		return nil, err
 	}
 
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 	return plaintext, nil
 }
