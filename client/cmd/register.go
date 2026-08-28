@@ -2,6 +2,7 @@ package cmd
 
 import (
 	conf "EFSS/client/config"
+	"EFSS/client/crypto"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -53,7 +54,7 @@ var registerCmd = &cobra.Command{
 		}
 		// Generate key pair and save to path
 		// For demonstration purposes, we will just create empty files for the keys.
-		err = generatekeys(filepath.Join(path, "keys"), password)
+		err = crypto.GenerateAsymmetricKeys(filepath.Join(path, "keys"), password)
 		if err != nil {
 			fmt.Println("Error generating keys:", err)
 			return

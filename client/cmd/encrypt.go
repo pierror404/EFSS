@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"EFSS/client/crypto"
 	"fmt"
 	"os"
 	"strings"
@@ -32,7 +33,7 @@ var encrypt = &cobra.Command{
 		if len(key) == 0 {
 			keys := strings.Split(encryptionKeysString, ",")
 			if len(keys) == 0 {
-				key = generateRandom32BytesKey()
+				key = crypto.GenerateRandomSymmetricKey()
 			} else {
 				if len(keys) > len(filesPaths) {
 					fmt.Println("Warning: More keys provided than files. Extra keys will be ignored.")
@@ -40,7 +41,7 @@ var encrypt = &cobra.Command{
 				if len(keys) < len(filesPaths) {
 					fmt.Println("Warning: Number of keys provided does not match number of files. Using random keys for unmatched files.")
 					for i := len(keys); i < len(filesPaths); i++ {
-						generated_key := generateRandom32BytesKey()
+						generated_key := crypto.GenerateRandomSymmetricKey()
 						keys = append(keys, string(generated_key))
 					}
 				}
@@ -67,7 +68,7 @@ var encrypt = &cobra.Command{
 			}
 		}
 		for i := 0; i < len(filesPaths); i++ {
-			encrypted, err := encryptfile(filesPaths[i], choosekey(key, keys, i))
+			encrypted, err := crypto.EncryptFile(filesPaths[i], choosekey(key, keys, i))
 			if err != nil {
 				panic(err)
 			}

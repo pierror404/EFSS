@@ -4,6 +4,7 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"EFSS/client/crypto"
 	"fmt"
 	"strings"
 
@@ -19,13 +20,13 @@ var verifyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		filesPaths := strings.Split(args[0], ",")
 		username := args[1]
-		publicKey, err := getPublicKeyByUsername(username)
+		publicKey, err := crypto.PublicKeyByUsername(username)
 		if err != nil {
 			fmt.Printf("Error loading public key for user %s: %v\n", username, err)
 			return
 		}
 		for _, filePath := range filesPaths {
-			_, err := verifyFile(filePath, publicKey) // Assuming signature is obtained elsewhere
+			_, err := crypto.VerifyFile(filePath, publicKey) // Assuming signature is obtained elsewhere
 			if err != nil {
 				fmt.Printf("Verification failed for file %s: %v\n", filePath, err)
 			} else {

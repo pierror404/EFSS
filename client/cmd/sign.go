@@ -2,6 +2,7 @@ package cmd
 
 import (
 	conf "EFSS/client/config"
+	"EFSS/client/crypto"
 	"fmt"
 	"os"
 	"strings"
@@ -39,7 +40,7 @@ var signCmd = &cobra.Command{
 			}
 			fmt.Println()
 
-			privatekey, err := loadPrivateKey(string(key), password)
+			privatekey, err := crypto.LoadPrivateKey(string(key), password)
 			if err != nil {
 				fmt.Printf("Error loading private key from %s: %v\n", string(key), err)
 				return
@@ -52,7 +53,7 @@ var signCmd = &cobra.Command{
 				outputfile = filepath + ".signed"
 			}
 
-			err = signFile(filepath, outputfile, privatekey)
+			err = crypto.SignFile(filepath, outputfile, privatekey)
 			if err != nil {
 				fmt.Printf("Error saving signature for %s: %v\n", filepath, err)
 				continue

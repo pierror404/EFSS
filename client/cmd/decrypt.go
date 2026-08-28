@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"EFSS/client/crypto"
 	"fmt"
 	"os"
 	"strings"
@@ -63,7 +64,7 @@ var decryptCmd = &cobra.Command{
 			} else {
 				keyToUse = []byte(keys[i])
 			}
-			plaintext, err := decryptfile(filePath, keyToUse)
+			plaintext, err := crypto.DecryptFile(filePath, keyToUse)
 			if err != nil {
 				fmt.Printf("Error decrypting file %s: %v\n", filePath, err)
 				continue

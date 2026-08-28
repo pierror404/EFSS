@@ -1,0 +1,54 @@
+-----------DB-----------------
+Table: users
+- username (PK)
+- password_hash
+- public_key
+- created_at
+
+Table: sessions
+- token (PK)
+- username (FK → users)
+- expires_at
+
+Table: messages
+- message_id (PK)
+- sender_username (FK → users)
+- encrypted_blob        -- il file cifrato con AES, UNA sola volta
+- signature             -- firma del mittente sul blob (o sul suo hash)
+- original_filename     -- opzionale, magari cifrato anch'esso
+- created_at
+
+Table: message_recipients
+- id (PK)
+- message_id (FK → messages)
+- recipient_username (FK → users)
+- encrypted_symmetric_key   -- chiave AES cifrata con la chiave pubblica di questo destinatario
+- delivered (bool)          -- se vuoi tracciare se è stato scaricato
+- delivered_at
+------------------------------
+
+se la procedura è:
+- encrypt (alice)
+- sign (alice)
+- verify (bob)
+- rebuild (ricostruisce il file di partenza, con e senza chiave) (bob)
+ALLORA uso il file type custom
+
+se invece la procedura è:
+- send (alice)
+- receive (bob)
+ALLORA uso la tabella del DB
+
+TODO:
+- costruire il tipo di file custom
+- i comandi non ancora finiti
+
+.signed format
+
+[4 byte]   Magic       "SIGN"
+[2 byte]   Filename length
+[N byte]   Filename
+[8 byte]   File size
+[N byte]   File content
+[2 byte]   Signature length
+[N byte]   Signature
