@@ -152,3 +152,30 @@ func Logout() error {
 	}
 	return nil
 }
+
+type RegisterRequest struct {
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	PublicKey string `json:"public_key"`
+}
+
+func Register(username, password, publicKeyB64 string) error {
+	body := RegisterRequest{
+		Username:  username,
+		Password:  password,
+		PublicKey: publicKeyB64,
+	}
+	data, _ := json.Marshal(body)
+
+	resp, err := http.Post(baseURL+"/register", "application/json", bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("%s", string(respBody))
+	}
+	return nil
+}

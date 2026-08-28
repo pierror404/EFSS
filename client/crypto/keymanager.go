@@ -13,15 +13,15 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-func GenerateAsymmetricKeys(path string, password []byte) error {
+func GenerateAsymmetricKeys(path string, password []byte) ([]byte, error) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// Private key
 	salt := make([]byte, saltSize)
 	if _, err := rand.Read(salt); err != nil {
-		return err
+		return nil, err
 	}
 	// Derive AES key from the password
 	key := argon2.IDKey(
@@ -34,36 +34,36 @@ func GenerateAsymmetricKeys(path string, password []byte) error {
 	)
 	encryptedFile, err := os.Create(path + "/private.key.enc")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer encryptedFile.Close()
 	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
 	ciphertext, err := Encrypt(privateKeyBytes, key)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// Structure of the encrypted file:
 	// [salt][nonce-ciphertext] (returned by encrypt function)
 	if _, err := encryptedFile.Write(salt); err != nil {
-		return err
+		return nil, err
 	}
 	if _, err := encryptedFile.Write(ciphertext); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Public key
 	publicBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	publicFile, err := os.Create(path + "/public.pem")
 	if err != nil {
-		return err
+		return publicBytes, err
 	}
 	defer publicFile.Close()
 
-	return pem.Encode(publicFile, &pem.Block{
+	return publicBytes, pem.Encode(publicFile, &pem.Block{
 		Type:  "PUBLIC KEY",
 		Bytes: publicBytes,
 	})
