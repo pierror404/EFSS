@@ -11,22 +11,22 @@ import (
 var inboxCmd = &cobra.Command{
 	Use:   "inbox",
 	Short: "Shows all the incoming messages not yet received",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		items, err := api.GetInbox()
 		if err != nil {
-			fmt.Println("Error: " + err.Error())
-			return
+			return fmt.Errorf("Error: %w", err)
 		}
 
 		if len(items) == 0 {
 			fmt.Println("No new messages.")
-			return
+			return nil
 		}
 
 		fmt.Println("ID\tSender\tFile")
 		for _, item := range items {
 			fmt.Printf("%d\t%s\t%s\n", item.MessageID, item.Sender, item.Filename)
 		}
+		return nil
 	},
 }
 

@@ -40,14 +40,12 @@ var encrypt = &cobra.Command{
 				}
 				for i := 0; i < len(keys); i++ {
 					if len(keys[i]) != 32 {
-						fmt.Printf("Key %d must be 32 bytes long\n", i+1)
-						return nil
+						return fmt.Errorf("Key %d must be 32 bytes long\n", i+1)
 					}
 				}
 			}
 		} else if len(key) != 32 {
-			fmt.Printf("Key must be 32 bytes long\n")
-			return nil
+			return fmt.Errorf("Key must be 32 bytes long\n")
 		}
 		if len(outputPaths) > len(filesPaths) {
 			fmt.Println("Warning: More output paths than input files. Extra output paths will be ignored.")

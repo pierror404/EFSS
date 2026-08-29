@@ -19,32 +19,29 @@ var signCmd = &cobra.Command{
 	Use:   "sign <filenames> [flags]",
 	Short: "Sign documents (separated by ,) with your private key",
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		filepaths := strings.Split(args[0], ",")
 		outputpaths := strings.Split(encryptionOutputs, ",")
 		key := []byte(keypath)
 		if len(key) == 0 {
 			privateKeyPath, err := conf.PrivateKeyPath()
 			if err != nil {
-				fmt.Println("Error reaching default private key file")
-				return
+				return fmt.Errorf("Error reaching default private key file: %w", err)
 			}
 			key = []byte(privateKeyPath)
 		}
-		for i, filepath := range filepaths {
-			fmt.Printf("Password: ")
-			password, err := term.ReadPassword(int(os.Stdin.Fd()))
-			if err != nil {
-				fmt.Println("Error reading password: " + err.Error())
-				return
-			}
-			fmt.Println()
+		fmt.Printf("Password: ")
+		password, err := term.ReadPassword(int(os.Stdin.Fd()))
+		if err != nil {
+			return fmt.Errorf("Error reading password: %w", err)
+		}
+		fmt.Println()
 
-			privatekey, err := crypto.LoadPrivateKey(string(key), password)
-			if err != nil {
-				fmt.Printf("Error loading private key from %s: %v\n", string(key), err)
-				return
-			}
+		privatekey, err := crypto.LoadPrivateKey(string(key), password)
+		if err != nil {
+			return fmt.Errorf("Error loading private key from %s: %w\n", string(key), err)
+		}
+		for i, filepath := range filepaths {
 
 			var outputfile string
 			if i < len(outputpaths) {
@@ -62,6 +59,7 @@ var signCmd = &cobra.Command{
 			}
 
 		}
+		return nil
 	},
 }
 

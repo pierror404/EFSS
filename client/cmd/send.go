@@ -24,7 +24,7 @@ var sendCmd = &cobra.Command{
 	Use:   "send <files> --to <recipients>",
 	Short: "Send one or more files (separated by ,) to one or more recipients",
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		filesPaths := strings.Split(args[0], ",")
 		var keys []string
 		key := []byte(symmetricKey)
@@ -46,14 +46,30 @@ var sendCmd = &cobra.Command{
 				}
 				for i := 0; i < len(keys); i++ {
 					if len(keys[i]) != 32 {
-						fmt.Printf("Key %d must be 32 bytes long\n", i+1)
-						return
+						return fmt.Errorf("Key %d must be 32 bytes long\n", i+1)
 					}
 				}
 			}
 		} else if len(key) != 32 {
-			fmt.Println("Key must be 32 bytes.")
-			return
+			return fmt.Errorf("Key must be 32 bytes.")
+		}
+		privkey := []byte(keypath)
+		if len(key) == 0 {
+			privateKeyPath, err := config.PrivateKeyPath()
+			if err != nil {
+				return fmt.Errorf("Error reaching default private key file: %w", err)
+			}
+			privkey = []byte(privateKeyPath)
+		}
+		fmt.Printf("Password: ")
+		password, err := term.ReadPassword(int(os.Stdin.Fd()))
+		if err != nil {
+			return fmt.Errorf("Error reading password: %w", err)
+		}
+		fmt.Println()
+		privateKey, err := crypto.LoadPrivateKey(string(privkey), password)
+		if err != nil {
+			return fmt.Errorf("Error: %w", err)
 		}
 		for i, file := range filesPaths {
 			symmetric := choosekey(key, keys, i)
@@ -61,27 +77,6 @@ var sendCmd = &cobra.Command{
 			if err != nil {
 				fmt.Println("Error: " + err.Error())
 				continue
-			}
-			key := []byte(keypath)
-			if len(key) == 0 {
-				privateKeyPath, err := config.PrivateKeyPath()
-				if err != nil {
-					fmt.Println("Error reaching default private key file: " + err.Error())
-					return
-				}
-				key = []byte(privateKeyPath)
-			}
-			fmt.Printf("Password: ")
-			password, err := term.ReadPassword(int(os.Stdin.Fd()))
-			if err != nil {
-				fmt.Println("Error reading password: " + err.Error())
-				return
-			}
-			fmt.Println()
-			privateKey, err := crypto.LoadPrivateKey(string(key), password)
-			if err != nil {
-				fmt.Println("Error: " + err.Error())
-				return
 			}
 			signature, err := crypto.Sign(encryptedBlob, privateKey)
 			if err != nil {
@@ -91,29 +86,32 @@ var sendCmd = &cobra.Command{
 			var recipientKeys []api.RecipientKey
 			for _, username := range usernames {
 				username = strings.TrimSpace(username)
-
 				pubKeyB64, err := api.GetPublicKey(username)
 				if err != nil {
 					fmt.Println("Recipient error " + username + ": " + err.Error())
-					return
+					fmt.Println("Skipping file")
+					continue
 				}
 
 				pubKey, err := base64.StdEncoding.DecodeString(pubKeyB64)
 				if err != nil {
 					fmt.Println("Invalid public key for " + username)
-					return
+					fmt.Println("Skipping file")
+					continue
 				}
 
 				recipientPubKey, err := crypto.ParsePublicKey(pubKey)
 				if err != nil {
 					fmt.Println("Public key parsing error for " + username + ": " + err.Error())
-					return
+					fmt.Println("Skipping file")
+					continue
 				}
 
 				encryptedKey, err := crypto.WrapSymmetricKey([]byte(symmetricKey), recipientPubKey)
 				if err != nil {
 					fmt.Println("Error while crypting symmetric key for " + username + ": " + err.Error())
-					return
+					fmt.Println("Skipping file")
+					continue
 				}
 
 				recipientKeys = append(recipientKeys, api.RecipientKey{
@@ -135,6 +133,7 @@ var sendCmd = &cobra.Command{
 
 			fmt.Printf("File sent to: %s\n", strings.Join(usernames, ", "))
 		}
+		return nil
 	},
 }
 

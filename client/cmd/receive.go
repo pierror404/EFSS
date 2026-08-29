@@ -21,18 +21,16 @@ var receiveCmd = &cobra.Command{
 	Use:   "receive <message-id>",
 	Short: "Download, verifies and decrypt an inbox message",
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		messageID, err := strconv.Atoi(args[0])
 		if err != nil {
-			fmt.Println("Invalid message id: " + err.Error())
-			return
+			return fmt.Errorf("Invalid message id: %w", err)
 		}
 
 		// 1. Scarica il messaggio dal server
 		result, err := api.DownloadMessage(messageID)
 		if err != nil {
-			fmt.Println("Error: " + err.Error())
-			return
+			return fmt.Errorf("Error: %w", err)
 		}
 
 		encryptedBlob, _ := base64.StdEncoding.DecodeString(result.EncryptedBlob)
@@ -43,44 +41,37 @@ var receiveCmd = &cobra.Command{
 		fmt.Printf("Password: ")
 		password, err := term.ReadPassword(int(os.Stdin.Fd()))
 		if err != nil {
-			fmt.Println("Error: " + err.Error())
-			return
+			return fmt.Errorf("Error: %w", err)
 		}
 		if len(privKeyPath) == 0 {
 			privKeyPath, err = config.PrivateKeyPath()
 			if err != nil {
-				fmt.Println("Can't obtain private key from default path.")
-				return
+				return fmt.Errorf("Can't obtain private key from default path: %w", err)
 			}
 		}
 		symmetricKey, err := crypto.UnwrapSymmetricKey(privKeyPath, password, encryptedKey)
 		if err != nil {
-			fmt.Println("Key decryption error: " + err.Error())
-			return
+			return fmt.Errorf("Key decryption error: %w", err)
 		}
 
 		// 3. Decifra il file
 		fileData, err := crypto.Decrypt(encryptedBlob, symmetricKey)
 		if err != nil {
-			fmt.Println("File decryption error: " + err.Error())
-			return
+			return fmt.Errorf("File decryption error: %w", err)
 		}
 
 		// 4. Verifica la firma del mittente
 		senderPubKeyB64, err := api.GetPublicKey(result.Sender)
 		if err != nil {
-			fmt.Println("Unable to get sender key: " + err.Error())
-			return
+			return fmt.Errorf("Unable to get sender key: %w", err)
 		}
 		senderPubKey, _ := base64.StdEncoding.DecodeString(senderPubKeyB64)
 		publicKey, err := crypto.ParsePublicKey(senderPubKey)
 		if err != nil {
-			fmt.Println("Error parsing public key: " + err.Error())
-			return
+			return fmt.Errorf("Error parsing public key: %w", err)
 		}
 		if err := crypto.VerifySignature(encryptedBlob, signature, publicKey); err != nil {
-			fmt.Println("Invalid signature: the might have been changed.")
-			return
+			return fmt.Errorf("Invalid signature: the might have been changed: %w", err)
 		}
 
 		// 5. Salva il file decifrato
@@ -89,11 +80,11 @@ var receiveCmd = &cobra.Command{
 			outPath = result.Filename
 		}
 		if err := os.WriteFile(outPath, fileData, 0600); err != nil {
-			fmt.Println("Error saving file: " + err.Error())
-			return
+			return fmt.Errorf("Error saving file: %w", err)
 		}
 
 		fmt.Printf("File received from %s, saved in %s (signature verified)\n", result.Sender, outPath)
+		return nil
 	},
 }
 

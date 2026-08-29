@@ -19,23 +19,20 @@ var verifyCmd = &cobra.Command{
 	Short: "Verify documents (separated by ,) signature",
 	Long:  `Verify the that the documents (separated by ,) are signed by the specified user.`,
 	Args:  cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		filesPaths := strings.Split(args[0], ",")
 		username := args[1]
 		pubKeyB64, err := api.GetPublicKey(username)
 		if err != nil {
-			fmt.Println("Error getting public key by username.")
-			return
+			return fmt.Errorf("Error getting public key by username: %w", err)
 		}
 		pubKeyBytes, err := base64.StdEncoding.DecodeString(pubKeyB64)
 		if err != nil {
-			fmt.Println("Invalid public key for %s" + username)
-			return
+			return fmt.Errorf("Invalid public key for %s: %w", username, err)
 		}
 		pubKey, err := crypto.ParsePublicKey(pubKeyBytes)
 		if err != nil {
-			fmt.Println("Public key parsing error for " + username + ": " + err.Error())
-			return
+			return fmt.Errorf("Public key parsing error for %s: %w", username, err)
 		}
 		for _, filePath := range filesPaths {
 			_, err := crypto.VerifyFile(filePath, pubKey) // Assuming signature is obtained elsewhere
@@ -45,6 +42,7 @@ var verifyCmd = &cobra.Command{
 				fmt.Printf("Verification successful for file %s\n", filePath)
 			}
 		}
+		return nil
 	},
 }
 

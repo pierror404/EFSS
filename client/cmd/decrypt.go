@@ -18,14 +18,14 @@ var decryptCmd = &cobra.Command{
 	Use:   "decrypt <filenames> [-k <key> | -K <keys>] [flags]",
 	Short: "Decrypt one or more file (separated by ,) by AES-256, using the provided key for all files",
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		filesPaths := strings.Split(args[0], ",")
 		outputPaths := strings.Split(encryptionOutputs, ",")
 		if len(outputPaths) > len(filesPaths) {
-			fmt.Println("Warning: More output paths than input files. Extra output paths will be ignored.")
+			return fmt.Errorf("Warning: More output paths than input files. Extra output paths will be ignored.")
 		}
 		if len(outputPaths) < len(filesPaths) {
-			fmt.Println("Warning: Fewer output paths than input files. Remaning files will be decrypted on stdout.")
+			return fmt.Errorf("Warning: Fewer output paths than input files. Remaning files will be decrypted on stdout.")
 		}
 		var key []byte = []byte(decryptionKeyString)
 		var keys []string
@@ -36,25 +36,21 @@ var decryptCmd = &cobra.Command{
 				fmt.Scanf("%s", &decryptionKeyString)
 				key = []byte(decryptionKeyString)
 				if len(key) != 32 {
-					fmt.Println("Key must be 32 bytes long")
-					return
+					return fmt.Errorf("Key must be 32 bytes long")
 				}
 			} else {
 				if len(keys) != len(filesPaths) {
-					fmt.Println("Number of keys must match number of files")
-					return
+					return fmt.Errorf("Number of keys must match number of files")
 				}
 				for i := 0; i < len(keys); i++ {
 					if len(keys[i]) != 32 {
-						fmt.Printf("Key %d must be 32 bytes long\n", i+1)
-						return
+						return fmt.Errorf("Key %d must be 32 bytes long\n", i+1)
 					}
 				}
 			}
 		} else {
 			if len(key) != 32 {
-				fmt.Println("Key must be 32 bytes long")
-				return
+				return fmt.Errorf("Key must be 32 bytes long")
 			}
 		}
 		for i, filePath := range filesPaths {
@@ -82,6 +78,7 @@ var decryptCmd = &cobra.Command{
 				fmt.Printf("Decrypted file %s to %s\n", filePath, outputFilePath)
 			}
 		}
+		return nil
 	},
 }
 
