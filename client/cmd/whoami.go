@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"EFSS/client/config"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -10,8 +11,14 @@ import (
 var whoamiCmd = &cobra.Command{
 	Use:   "whoami",
 	Short: "Display the current logged-in user",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Logged as: [username]")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		creds, err := config.LoadCredentials()
+		if err != nil {
+			return fmt.Errorf("Not logged in: %w", err)
+		}
+
+		fmt.Println(creds.Username)
+		return nil
 	},
 }
 
