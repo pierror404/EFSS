@@ -13,13 +13,6 @@ var encryptionKeyString string
 var encryptionKeysString string
 var encryptionOutputs string
 
-func choosekey(key []byte, keys []string, index int) []byte {
-	if len(key) != 0 {
-		return key
-	}
-	return []byte(keys[index])
-}
-
 var encrypt = &cobra.Command{
 	Use:   "encrypt <filenames> [flags]",
 	Short: "Encrypt one or more file (separated by ,) by AES-256",

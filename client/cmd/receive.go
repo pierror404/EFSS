@@ -101,14 +101,4 @@ func init() {
 	receiveCmd.Flags().StringVarP(&privKeyPath, "keypath", "-p", "", "filepath to the private key used for signing (if different from the default path 'HOMEDIR/.efss/key/private.key.enc')")
 	receiveCmd.Flags().StringVarP(&outputPath, "output", "o", "", "output file (default: original name)")
 	rootCmd.AddCommand(receiveCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// receiveCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// receiveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
