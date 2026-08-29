@@ -14,7 +14,7 @@ var inboxCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		items, err := api.GetInbox()
 		if err != nil {
-			fmt.Println("Error")
+			fmt.Println("Error: " + err.Error())
 			return
 		}
 

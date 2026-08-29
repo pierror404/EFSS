@@ -7,7 +7,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
-	"fmt"
 	"os"
 
 	"golang.org/x/crypto/argon2"
@@ -67,7 +66,7 @@ func GenerateAsymmetricKeys(path string, password []byte) ([]byte, error) {
 		Type:  "PUBLIC KEY",
 		Bytes: publicBytes,
 	})
-} // da modificare mandando pub key al server
+}
 
 func GenerateRandomSymmetricKey() []byte {
 	key := make([]byte, 32)
@@ -84,7 +83,7 @@ func LoadPrivateKey(filename string, password []byte) (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 	if len(data) < saltSize {
-		return nil, fmt.Errorf("Invalid private key file")
+		return nil, errors.New("Invalid private key file")
 	}
 	salt := data[:saltSize]
 	remaining := data[saltSize:]
@@ -111,12 +110,12 @@ func LoadPrivateKey(filename string, password []byte) (*rsa.PrivateKey, error) {
 func ParsePublicKey(raw []byte) (*rsa.PublicKey, error) {
 	pubAny, err := x509.ParsePKIXPublicKey(raw)
 	if err != nil {
-		return nil, errors.New("chiave pubblica non valida")
+		return nil, errors.New("Invalid public key.")
 	}
 
 	rsaPub, ok := pubAny.(*rsa.PublicKey)
 	if !ok {
-		return nil, errors.New("la chiave pubblica non è di tipo RSA")
+		return nil, errors.New("Public key is not RSA type.")
 	}
 
 	return rsaPub, nil
@@ -150,7 +149,7 @@ func UnwrapSymmetricKey(privateKeyFilename string, password []byte, wrapped []by
 		nil,
 	)
 	if err != nil {
-		return nil, errors.New("decifratura fallita: chiave privata errata o dati corrotti")
+		return nil, errors.New("Decrypt failure: wrong private key or corrupted data.")
 	}
 
 	return symmetricKey, nil

@@ -57,12 +57,12 @@ var registerCmd = &cobra.Command{
 		// For demonstration purposes, we will just create empty files for the keys.
 		publicKey, err := crypto.GenerateAsymmetricKeys(filepath.Join(path, "keys"), password)
 		if err != nil {
-			fmt.Println("Error generating keys:", err)
+			fmt.Println("Error generating keys: " + err.Error())
 			return
 		}
 		api.Register(username, string(password), string(publicKey))
-		fmt.Println("Keys generated and saved in", path)
-		fmt.Println("User", username, "registered successfully.")
+		fmt.Println("Keys generated and saved in " + path)
+		fmt.Println("User " + username + " registered successfully.")
 	},
 }
 

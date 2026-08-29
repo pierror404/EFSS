@@ -66,7 +66,7 @@ var sendCmd = &cobra.Command{
 			if len(key) == 0 {
 				privateKeyPath, err := config.PrivateKeyPath()
 				if err != nil {
-					fmt.Println("Error reaching default private key file")
+					fmt.Println("Error reaching default private key file: " + err.Error())
 					return
 				}
 				key = []byte(privateKeyPath)
@@ -74,7 +74,7 @@ var sendCmd = &cobra.Command{
 			fmt.Printf("Password: ")
 			password, err := term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
-				fmt.Println("Error reading password")
+				fmt.Println("Error reading password: " + err.Error())
 				return
 			}
 			fmt.Println()
@@ -134,7 +134,6 @@ var sendCmd = &cobra.Command{
 			}
 
 			fmt.Printf("File sent to: %s\n", strings.Join(usernames, ", "))
-			return
 		}
 	},
 }

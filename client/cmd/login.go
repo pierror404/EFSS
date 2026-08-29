@@ -27,11 +27,11 @@ var loginCmd = &cobra.Command{
 		token, err := api.Login(username, string(password))
 		if err != nil {
 			fmt.Println("Login failed!")
-			fmt.Println(err)
+			fmt.Println("Error: " + err.Error())
 			return
 		}
 		if err := conf.SaveToken(username, token); err != nil {
-			fmt.Println("error while saving credentials: " + err.Error())
+			fmt.Println("Error while saving credentials: " + err.Error())
 		}
 	},
 }

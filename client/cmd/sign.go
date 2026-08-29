@@ -35,7 +35,7 @@ var signCmd = &cobra.Command{
 			fmt.Printf("Password: ")
 			password, err := term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
-				fmt.Println("Error reading password")
+				fmt.Println("Error reading password: " + err.Error())
 				return
 			}
 			fmt.Println()

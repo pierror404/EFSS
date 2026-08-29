@@ -68,11 +68,11 @@ var encrypt = &cobra.Command{
 		for i := 0; i < len(filesPaths); i++ {
 			encrypted, err := crypto.EncryptFile(filesPaths[i], choosekey(key, keys, i))
 			if err != nil {
-				panic(err)
+				fmt.Println("Error: " + err.Error())
 			}
 			err = os.WriteFile(outputPaths[i], encrypted, 0644)
 			if err != nil {
-				panic(err)
+				fmt.Println("Error: " + err.Error())
 			}
 			fmt.Printf("File %s encrypted and saved to %s\n", filesPaths[i], outputPaths[i])
 		}

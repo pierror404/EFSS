@@ -14,7 +14,7 @@ var logoutCmd = &cobra.Command{
 	Short: "Logout from EFSS.",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := api.Logout(); err != nil {
-			fmt.Println("Warning: server side logaout failed, will remove local saved credentials anyway")
+			fmt.Println("Warning: server side logout failed, will remove local saved credentials anyway")
 		}
 
 		if err := conf.ClearToken(); err != nil {
