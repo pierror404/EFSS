@@ -121,6 +121,22 @@ func ParsePublicKey(raw []byte) (*rsa.PublicKey, error) {
 	return rsaPub, nil
 }
 
+func ParsePublicKeyFromFile(path string) (*rsa.PublicKey, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, errors.New("error reading public key file: " + err.Error())
+	}
+
+	block, _ := pem.Decode(data)
+	if block == nil {
+		return nil, errors.New("invalid PEM public key file")
+	}
+
+	pub, err := ParsePublicKey(block.Bytes)
+
+	return pub, nil
+}
+
 func WrapSymmetricKey(symmetricKey []byte, recipientPubKey *rsa.PublicKey) ([]byte, error) {
 	ciphertext, err := rsa.EncryptOAEP(
 		sha256.New(),
