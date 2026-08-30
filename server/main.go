@@ -16,7 +16,7 @@ func main() {
 	}
 
 	if err := db.Init(connString); err != nil {
-		log.Fatal("errore inizializzazione DB:", err)
+		log.Fatal("Init DB error:", err)
 	}
 
 	mux := http.NewServeMux()
@@ -31,6 +31,6 @@ func main() {
 	mux.HandleFunc("GET /mailbox/inbox", middleware.RequireAuth(handlers.Inbox))
 	mux.HandleFunc("GET /mailbox/download/{id}", middleware.RequireAuth(handlers.Download))
 
-	log.Println("Server in ascolto su :8080")
+	log.Println("Server listening on port :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }

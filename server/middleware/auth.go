@@ -20,7 +20,7 @@ func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {
-			http.Error(w, "token mancante", http.StatusUnauthorized)
+			http.Error(w, "missing tocken", http.StatusUnauthorized)
 			return
 		}
 		token := strings.TrimPrefix(authHeader, "Bearer ")
@@ -33,12 +33,12 @@ func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 		).Scan(&username, &expiresAt)
 
 		if err != nil {
-			http.Error(w, "token non valido", http.StatusUnauthorized)
+			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
 
 		if time.Now().After(expiresAt) {
-			http.Error(w, "token scaduto", http.StatusUnauthorized)
+			http.Error(w, "token expired", http.StatusUnauthorized)
 			return
 		}
 
