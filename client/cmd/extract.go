@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"EFSS/client/api"
-	"EFSS/client/crypto"
 	"crypto/rsa"
+	"efss-client/api"
+	"efss-client/crypto"
 	"fmt"
 
 	"github.com/spf13/cobra"

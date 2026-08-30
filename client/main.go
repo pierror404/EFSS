@@ -1,6 +1,6 @@
 package client
 
-import "EFSS/client/cmd"
+import "efss-client/cmd"
 
 func main() {
 	cmd.Execute()

@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"EFSS/client/api"
-	"EFSS/client/config"
-	"EFSS/client/crypto"
+	"efss-client/api"
+	"efss-client/config"
+	"efss-client/crypto"
 	"encoding/base64"
 	"fmt"
 	"os"

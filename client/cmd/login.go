@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"EFSS/client/api"
-	conf "EFSS/client/config"
+	"efss-client/api"
+	conf "efss-client/config"
 	"fmt"
 	"os"
 

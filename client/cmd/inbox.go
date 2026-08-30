@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"EFSS/client/api"
+	"efss-client/api"
 	"fmt"
 
 	"github.com/spf13/cobra"

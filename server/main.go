@@ -1,9 +1,9 @@
 package main
 
 import (
-	"EFSS/server/db"
-	"EFSS/server/handlers"
-	"EFSS/server/middleware"
+	"efss-server/db"
+	"efss-server/handlers"
+	"efss-server/middleware"
 	"log"
 	"net/http"
 	"os"

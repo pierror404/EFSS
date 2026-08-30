@@ -4,8 +4,8 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"EFSS/client/api"
-	"EFSS/client/crypto"
+	"efss-client/api"
+	"efss-client/crypto"
 	"encoding/base64"
 	"fmt"
 	"strings"

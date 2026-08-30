@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"EFSS/server/db"
-	"EFSS/server/middleware"
+	"efss-server/db"
+	"efss-server/middleware"
 )
 
 type RecipientKey struct {

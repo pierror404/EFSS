@@ -1,8 +1,8 @@
 package api
 
 import (
-	conf "EFSS/client/config"
 	"bytes"
+	conf "efss-client/config"
 	"encoding/json"
 	"fmt"
 	"io"

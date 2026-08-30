@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"EFSS/server/db"
+	"efss-server/db"
 )
 
 type PublicKeyResponse struct {

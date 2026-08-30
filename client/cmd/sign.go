@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	conf "EFSS/client/config"
-	"EFSS/client/crypto"
+	conf "efss-client/config"
+	"efss-client/crypto"
 	"fmt"
 	"os"
 	"strings"

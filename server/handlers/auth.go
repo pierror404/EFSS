@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"EFSS/server/db"
-	"EFSS/server/middleware"
+	"efss-server/db"
+	"efss-server/middleware"
 
 	"golang.org/x/crypto/argon2"
 )
