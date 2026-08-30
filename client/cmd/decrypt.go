@@ -20,12 +20,12 @@ var decryptCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		filesPaths := strings.Split(args[0], ",")
-		outputPaths := strings.Split(encryptionOutputs, ",")
+		outputPaths := splitString(encryptionOutputs, ",")
 		if len(outputPaths) > len(filesPaths) {
-			return fmt.Errorf("Warning: More output paths than input files. Extra output paths will be ignored.")
+			fmt.Println("Warning: More output paths than input files. Extra output paths will be ignored.")
 		}
 		if len(outputPaths) < len(filesPaths) {
-			return fmt.Errorf("Warning: Fewer output paths than input files. Remaning files will be decrypted on stdout.")
+			fmt.Println("Warning: Fewer output paths than input files. Remaning files will be decrypted on stdout.")
 		}
 		var key []byte = []byte(decryptionKeyString)
 		var keys []string
@@ -66,7 +66,7 @@ var decryptCmd = &cobra.Command{
 				continue
 			}
 			if len(outputPaths) <= i {
-				fmt.Printf("Decrypted file %s:\n\t%s\n\n", filePath, string(plaintext))
+				fmt.Printf("Decrypted file %s:\n%s\n\n", filePath, string(plaintext))
 				continue
 			} else {
 				outputFilePath := outputPaths[i]
@@ -83,9 +83,9 @@ var decryptCmd = &cobra.Command{
 }
 
 func init() {
-	decryptCmd.Flags().StringVarP(&decryptionKeysString, "Keys", "K", "", "Keys for decryption (32 bytes separated by ,) one each file")
+	decryptCmd.Flags().StringVarP(&decryptionKeysString, "keys", "K", "", "Keys for decryption (32 bytes separated by ,) one each file")
 	decryptCmd.Flags().StringVarP(&decryptionKeyString, "key", "k", "", "Key for decryption (32 bytes) for all files")
-	rootCmd.MarkFlagsMutuallyExclusive("Keys", "key")
+	decryptCmd.MarkFlagsMutuallyExclusive("keys", "key")
 	decryptCmd.Flags().StringVarP(&decryptionOutputs, "output", "o", "", "Output file paths (separated by ,)")
 	rootCmd.AddCommand(decryptCmd)
 }

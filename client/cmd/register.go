@@ -4,6 +4,7 @@ import (
 	"efss-client/api"
 	conf "efss-client/config"
 	"efss-client/crypto"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,7 +13,7 @@ import (
 	"golang.org/x/term"
 )
 
-var keysfolder string
+//var keysfolder string
 
 // registerCmd represents the register command
 var registerCmd = &cobra.Command{
@@ -50,11 +51,19 @@ var registerCmd = &cobra.Command{
 		}
 		// Generate key pair and save to path
 		// For demonstration purposes, we will just create empty files for the keys.
+		pathToKeys := filepath.Join(path, "keys")
+		err = os.MkdirAll(pathToKeys, 0700)
+		if err != nil {
+			return fmt.Errorf("Error generating keys path: %w", err)
+		}
 		publicKey, err := crypto.GenerateAsymmetricKeys(filepath.Join(path, "keys"), password)
 		if err != nil {
 			return fmt.Errorf("Error generating keys: %w", err)
 		}
-		api.Register(username, string(password), string(publicKey))
+		pubKeyB64 := base64.StdEncoding.EncodeToString(publicKey)
+		if err := api.Register(username, string(password), pubKeyB64); err != nil {
+			return fmt.Errorf("Error signing up the user %s: %w", username, err)
+		}
 		fmt.Println("Keys generated and saved in " + path)
 		fmt.Println("User " + username + " registered successfully.")
 		return nil
@@ -62,6 +71,6 @@ var registerCmd = &cobra.Command{
 }
 
 func init() {
-	registerCmd.Flags().StringVarP(&keysfolder, "folder", "-f", "", "folder where the keys will be stored (if different from the default path './keys')")
+	//registerCmd.Flags().StringVarP(&keysfolder, "folder", "f", "", "folder where the keys will be stored (if different from the default path './keys')")
 	rootCmd.AddCommand(registerCmd)
 }

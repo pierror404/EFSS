@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"efss-client/api"
 	"efss-client/crypto"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -47,7 +48,11 @@ var extractCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			pubKeyToUse, err = crypto.ParsePublicKey([]byte(pubKeyString))
+			pubKeyBytes, err := base64.StdEncoding.DecodeString(pubKeyString)
+			if err != nil {
+				return fmt.Errorf("Invalid public key for %s: %w", onlinePKusername, err)
+			}
+			pubKeyToUse, err = crypto.ParsePublicKey(pubKeyBytes)
 			if err != nil {
 				return err
 			}

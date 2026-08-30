@@ -21,7 +21,7 @@ var signCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		filepaths := strings.Split(args[0], ",")
-		outputpaths := strings.Split(encryptionOutputs, ",")
+		outputpaths := splitString(encryptionOutputs, ",")
 		key := []byte(keypath)
 		if len(key) == 0 {
 			privateKeyPath, err := conf.PrivateKeyPath()
@@ -49,7 +49,7 @@ var signCmd = &cobra.Command{
 			} else {
 				outputfile = filepath + ".signed"
 			}
-
+			fmt.Printf("Output file: %s\n", outputfile)
 			err = crypto.SignFile(filepath, outputfile, privatekey)
 			if err != nil {
 				fmt.Printf("Error saving signature for %s: %v\n", filepath, err)
@@ -64,7 +64,7 @@ var signCmd = &cobra.Command{
 }
 
 func init() {
-	signCmd.Flags().StringVarP(&keypath, "keypath", "-p", "", "filepath to the private key used for signing (if different from the default path 'HOMEDIR/.efss/key/private.key.enc')")
+	signCmd.Flags().StringVarP(&keypath, "keypath", "p", "", "filepath to the private key used for signing (if different from the default path 'HOMEDIR/.efss/key/private.key.enc')")
 	signCmd.Flags().StringVarP(&signedoutputfile, "output", "o", "", "Output file paths (separated by ,)")
 	rootCmd.AddCommand(signCmd)
 }

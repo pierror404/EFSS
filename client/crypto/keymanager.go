@@ -7,7 +7,9 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"os"
+	"path/filepath"
 
 	"golang.org/x/crypto/argon2"
 )
@@ -31,7 +33,7 @@ func GenerateAsymmetricKeys(path string, password []byte) ([]byte, error) {
 		4,       // threads
 		32,      // key length: 256 bit
 	)
-	encryptedFile, err := os.Create(path + "/private.key.enc")
+	encryptedFile, err := os.Create(filepath.Join(path, "private.key.enc"))
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +58,7 @@ func GenerateAsymmetricKeys(path string, password []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	publicFile, err := os.Create(path + "/public.pem")
+	publicFile, err := os.Create(filepath.Join(path, "public.pem"))
 	if err != nil {
 		return publicBytes, err
 	}
@@ -157,6 +159,9 @@ func UnwrapSymmetricKey(privateKeyFilename string, password []byte, wrapped []by
 		return nil, err
 	}
 
+	fmt.Println("DEBUG privKey loaded, modulus size (bits):", privKey.N.BitLen())
+	fmt.Println("DEBUG wrapped length:", len(wrapped))
+
 	symmetricKey, err := rsa.DecryptOAEP(
 		sha256.New(),
 		rand.Reader,
@@ -164,6 +169,8 @@ func UnwrapSymmetricKey(privateKeyFilename string, password []byte, wrapped []by
 		wrapped,
 		nil,
 	)
+	fmt.Println("DEBUG DecryptOAEP error:", err)
+	fmt.Println("DEBUG symmetricKey length right after DecryptOAEP:", len(symmetricKey))
 	if err != nil {
 		return nil, errors.New("Decrypt failure: wrong private key or corrupted data.")
 	}

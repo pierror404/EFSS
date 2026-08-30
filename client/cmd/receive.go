@@ -36,7 +36,7 @@ var receiveCmd = &cobra.Command{
 		encryptedBlob, _ := base64.StdEncoding.DecodeString(result.EncryptedBlob)
 		signature, _ := base64.StdEncoding.DecodeString(result.Signature)
 		encryptedKey, _ := base64.StdEncoding.DecodeString(result.EncryptedSymmetricKey)
-
+		fmt.Println("Encrypted key len: ", len(encryptedKey))
 		// 2. Decifra la chiave simmetrica con la propria chiave privata locale
 		fmt.Printf("Password: ")
 		password, err := term.ReadPassword(int(os.Stdin.Fd()))
@@ -53,7 +53,7 @@ var receiveCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("Key decryption error: %w", err)
 		}
-
+		fmt.Println("DEBUG symmetricKey length:", len(symmetricKey))
 		// 3. Decifra il file
 		fileData, err := crypto.Decrypt(encryptedBlob, symmetricKey)
 		if err != nil {
@@ -89,7 +89,7 @@ var receiveCmd = &cobra.Command{
 }
 
 func init() {
-	receiveCmd.Flags().StringVarP(&privKeyPath, "keypath", "-p", "", "filepath to the private key used for signing (if different from the default path 'HOMEDIR/.efss/key/private.key.enc')")
+	receiveCmd.Flags().StringVarP(&privKeyPath, "keypath", "p", "", "filepath to the private key used for signing (if different from the default path 'HOMEDIR/.efss/key/private.key.enc')")
 	receiveCmd.Flags().StringVarP(&outputPath, "output", "o", "", "output file (default: original name)")
 	rootCmd.AddCommand(receiveCmd)
 }

@@ -162,7 +162,7 @@ func VerifyFile(filename string, publicKey *rsa.PublicKey) (*SignedFile, error) 
 
 	err = VerifySignature(signedFile.Content, signedFile.Signature, publicKey)
 	if err != nil {
-		return signedFile, fmt.Errorf("firma non valida: %w", err)
+		return signedFile, fmt.Errorf("Invalid signature: %w", err)
 	}
 
 	return signedFile, nil

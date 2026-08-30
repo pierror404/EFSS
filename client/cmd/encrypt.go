@@ -73,9 +73,9 @@ var encrypt = &cobra.Command{
 }
 
 func init() {
-	encrypt.Flags().StringVarP(&encryptionKeysString, "Keys", "K", "", "Keys for encryption (32 bytes separated by ,)")
+	encrypt.Flags().StringVarP(&encryptionKeysString, "keys", "K", "", "Keys for encryption (32 bytes separated by ,)")
 	encrypt.Flags().StringVarP(&encryptionKeyString, "key", "k", "", "Key for encryption (32 bytes)")
-	encrypt.MarkFlagsMutuallyExclusive("Keys", "key")
+	encrypt.MarkFlagsMutuallyExclusive("keys", "key")
 	encrypt.Flags().StringVarP(&encryptionOutputs, "output", "o", "", "Output file paths (separated by ,)")
 	rootCmd.AddCommand(encrypt)
 }

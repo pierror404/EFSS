@@ -46,18 +46,18 @@ func SendMessage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "DB error", http.StatusInternalServerError)
 		return
 	}
-
-	res, err := tx.Exec(
+	var messageID int
+	err = tx.QueryRow(
 		`INSERT INTO messages (sender_username, encrypted_blob, signature, original_filename)
-		 VALUES ($1, $2, $3, $4)`,
+		 VALUES ($1, $2, $3, $4) RETURNING message_id`,
 		sender, blob, sig, req.Filename,
-	)
+	).Scan(&messageID)
 	if err != nil {
 		tx.Rollback()
 		http.Error(w, "error while writing message", http.StatusInternalServerError)
 		return
 	}
-	messageID, _ := res.LastInsertId()
+	//messageID, _ := res.LastInsertId()
 
 	for _, rec := range req.Recipients {
 		keyBytes, err := base64.StdEncoding.DecodeString(rec.EncryptedSymmetricKey)

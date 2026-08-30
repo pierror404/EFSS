@@ -30,9 +30,11 @@ var sendCmd = &cobra.Command{
 		key := []byte(symmetricKey)
 		usernames := strings.Split(recipients, ",")
 		if len(key) == 0 {
-			keys := strings.Split(encryptionKeysString, ",")
+			keys := splitString(CSVSymmetricKeys, ",")
 			if len(keys) == 0 {
 				key = crypto.GenerateRandomSymmetricKey()
+				fmt.Println("DEBUG generated key")
+				fmt.Println("DEBUG Generated key: ", key)
 			} else {
 				if len(keys) > len(filesPaths) {
 					fmt.Println("Warning: More keys provided than files. Extra keys will be ignored.")
@@ -54,7 +56,7 @@ var sendCmd = &cobra.Command{
 			return fmt.Errorf("Key must be 32 bytes.")
 		}
 		privkey := []byte(keypath)
-		if len(key) == 0 {
+		if len(privkey) == 0 {
 			privateKeyPath, err := config.PrivateKeyPath()
 			if err != nil {
 				return fmt.Errorf("Error reaching default private key file: %w", err)
@@ -69,13 +71,13 @@ var sendCmd = &cobra.Command{
 		fmt.Println()
 		privateKey, err := crypto.LoadPrivateKey(string(privkey), password)
 		if err != nil {
-			return fmt.Errorf("Error: %w", err)
+			return fmt.Errorf("Error 1: %w", err)
 		}
 		for i, file := range filesPaths {
 			symmetric := choosekey(key, keys, i)
 			encryptedBlob, err := crypto.EncryptFile(file, symmetric)
 			if err != nil {
-				fmt.Println("Error: " + err.Error())
+				fmt.Println("Error 2: " + err.Error())
 				continue
 			}
 			signature, err := crypto.Sign(encryptedBlob, privateKey)
@@ -106,8 +108,9 @@ var sendCmd = &cobra.Command{
 					fmt.Println("Skipping file")
 					continue
 				}
-
-				encryptedKey, err := crypto.WrapSymmetricKey([]byte(symmetricKey), recipientPubKey)
+				fmt.Println("DEBUG symmetricKey length at generation:", len(symmetricKey))
+				fmt.Println("DEBUG symmetricKey at generation:", symmetricKey)
+				encryptedKey, err := crypto.WrapSymmetricKey([]byte(symmetric), recipientPubKey)
 				if err != nil {
 					fmt.Println("Error while crypting symmetric key for " + username + ": " + err.Error())
 					fmt.Println("Skipping file")
@@ -127,7 +130,7 @@ var sendCmd = &cobra.Command{
 			}
 
 			if err := api.SendMessage(payload); err != nil {
-				fmt.Println("Error: " + err.Error())
+				fmt.Println("Error 3: " + err.Error())
 				continue
 			}
 
@@ -141,10 +144,10 @@ func init() {
 
 	sendCmd.Flags().StringVarP(&recipients, "to", "t", "", "recipients separated by ,")
 	sendCmd.MarkFlagRequired("to")
-	sendCmd.Flags().StringVarP(&CSVSymmetricKeys, "Keys", "K", "", "Keys for encryption (32 bytes separated by ,)")
+	sendCmd.Flags().StringVarP(&CSVSymmetricKeys, "keys", "K", "", "Keys for encryption (32 bytes separated by ,)")
 	sendCmd.Flags().StringVarP(&symmetricKey, "key", "k", "", "Key for encryption (32 bytes)")
-	sendCmd.MarkFlagsMutuallyExclusive("Keys", "key")
-	sendCmd.Flags().StringVarP(&privateKeyPath, "keypath", "-p", "", "filepath to the private key used for signing (if different from the default path 'HOMEDIR/.efss/key/private.key.enc')")
+	sendCmd.MarkFlagsMutuallyExclusive("keys", "key")
+	sendCmd.Flags().StringVarP(&privateKeyPath, "keypath", "p", "", "filepath to the private key used for signing (if different from the default path 'HOMEDIR/.efss/key/private.key.enc')")
 
 	rootCmd.AddCommand(sendCmd)
 }
