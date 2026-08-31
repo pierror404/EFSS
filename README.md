@@ -25,7 +25,8 @@ The project implements a secure mailbox-like file-sharing workflow where each us
 - generate a public/private keypair locally
 - upload encrypted files for one or more recipients
 - receive encrypted messages in an inbox
-- decrypt files only with their own private key
+- encrypt files using a key (chosen or randomly generated)
+- decrypt files only with their own key
 - verify digital signatures from the sender
 
 This solution was designed as an academic project for the final exam of the course "Sicurezza dell'informazione M" at Unibo, with a strong focus on cryptographic engineering and secure-by-design implementation.
