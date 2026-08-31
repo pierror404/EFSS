@@ -2,9 +2,13 @@ package cmd
 
 import (
 	"efss-client/crypto"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/atotto/clipboard"
 
 	"github.com/spf13/cobra"
 )
@@ -12,6 +16,36 @@ import (
 var encryptionKeyString string
 var encryptionKeysString string
 var encryptionOutputs string
+
+func showKeyToUser(key []byte) error {
+	keyHex := hex.EncodeToString(key)
+
+	if err := clipboard.WriteAll(keyHex); err != nil {
+		fmt.Println("Chiave generata (clipboard non disponibile):", keyHex)
+		return nil
+	}
+	fmt.Println("Key generated and copied to your clipboard. Paste it and save it securely.")
+	fmt.Println("Gli appunti verranno svuotati tra 30 secondi.")
+	fmt.Println("Press ENTER when you're done using the key (pasting it somewhere),")
+	fmt.Println("or wait 30 seconds for auto-delete.")
+
+	done := make(chan struct{})
+	go func() {
+		fmt.Scanln()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		fmt.Println("Clipboard empty.")
+	case <-time.After(30 * time.Second):
+		fmt.Println("Time out, clipboard empty.")
+	}
+
+	clipboard.WriteAll("")
+
+	return nil
+}
 
 var encrypt = &cobra.Command{
 	Use:   "encrypt <filenames> [flags]",
@@ -27,6 +61,7 @@ var encrypt = &cobra.Command{
 			keys := strings.Split(encryptionKeysString, ",")
 			if len(keys) == 0 {
 				key = crypto.GenerateRandomSymmetricKey()
+				showKeyToUser(key)
 			} else {
 				if len(keys) > len(filesPaths) {
 					fmt.Println("Warning: More keys provided than files. Extra keys will be ignored.")
