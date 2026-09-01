@@ -170,15 +170,6 @@ func VerifyFile(filename string, publicKey *rsa.PublicKey) (*SignedFile, error) 
 
 // ReadSignedFile reads a signed file from the provided reader and returns a SignedFile struct.
 func ReadSignedFile(r io.Reader) (*SignedFile, error) {
-	/*
-		[4 byte]   Magic       "SIGN"
-		[2 byte]   Filename length
-		[N byte]   Filename
-		[8 byte]   File size
-		[N byte]   File content
-		[2 byte]   Signature length
-		[N byte]   Signature
-	*/
 	// MAGIC
 	magic := make([]byte, 4)
 
