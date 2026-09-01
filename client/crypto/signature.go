@@ -72,6 +72,7 @@ func SignFile(inputFilename string, outputFilename string, privateKey *rsa.Priva
 	return nil
 }
 
+// WriteSignedFile writes the signed file to the provided writer.
 func WriteSignedFile(w io.Writer, filename string, content []byte, signature []byte) error {
 	/*
 		[4 byte]   Magic       "SIGN"
@@ -129,9 +130,7 @@ func WriteSignedFile(w io.Writer, filename string, content []byte, signature []b
 	return nil
 }
 
-/*
- * VERIFY
- */
+// VerifySignature verifies the signature of the given content using the provided RSA public key.
 func VerifySignature(content []byte, signature []byte, publicKey *rsa.PublicKey) error {
 	hash := sha256.Sum256(content)
 
@@ -147,6 +146,7 @@ func VerifySignature(content []byte, signature []byte, publicKey *rsa.PublicKey)
 	)
 }
 
+// VerifyFile verifies the signature of the signed file specified by the filename using the provided RSA public key.
 func VerifyFile(filename string, publicKey *rsa.PublicKey) (*SignedFile, error) {
 
 	file, err := os.Open(filename)
@@ -168,6 +168,7 @@ func VerifyFile(filename string, publicKey *rsa.PublicKey) (*SignedFile, error) 
 	return signedFile, nil
 }
 
+// ReadSignedFile reads a signed file from the provided reader and returns a SignedFile struct.
 func ReadSignedFile(r io.Reader) (*SignedFile, error) {
 	/*
 		[4 byte]   Magic       "SIGN"
