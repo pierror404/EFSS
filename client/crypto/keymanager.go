@@ -14,6 +14,9 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
+// GenerateAsymmetricKeys generates a new RSA key pair,
+// encrypts the private key using the provided password,
+// and saves both keys to the specified path.
 func GenerateAsymmetricKeys(path string, password []byte) ([]byte, error) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
@@ -70,6 +73,7 @@ func GenerateAsymmetricKeys(path string, password []byte) ([]byte, error) {
 	})
 }
 
+// GenerateRandomSymmetricKey generates a random 256-bit symmetric key.
 func GenerateRandomSymmetricKey() []byte {
 	key := make([]byte, 32)
 	_, err := rand.Read(key)
@@ -79,6 +83,7 @@ func GenerateRandomSymmetricKey() []byte {
 	return key
 }
 
+// LoadPrivateKey loads and decrypts the RSA private key from the specified file using the provided password.
 func LoadPrivateKey(filename string, password []byte) (*rsa.PrivateKey, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -109,6 +114,7 @@ func LoadPrivateKey(filename string, password []byte) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
+// ParsePublicKey parses a PEM-encoded public key and returns an *rsa.PublicKey.
 func ParsePublicKey(raw []byte) (*rsa.PublicKey, error) {
 	pubAny, err := x509.ParsePKIXPublicKey(raw)
 	if err != nil {
@@ -123,6 +129,7 @@ func ParsePublicKey(raw []byte) (*rsa.PublicKey, error) {
 	return rsaPub, nil
 }
 
+// ParsePublicKeyFromFile reads a PEM-encoded public key from the specified file and returns an *rsa.PublicKey.
 func ParsePublicKeyFromFile(path string) (*rsa.PublicKey, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -139,6 +146,7 @@ func ParsePublicKeyFromFile(path string) (*rsa.PublicKey, error) {
 	return pub, nil
 }
 
+// WrapSymmetricKey encrypts the given symmetric key using the recipient's public RSA key.
 func WrapSymmetricKey(symmetricKey []byte, recipientPubKey *rsa.PublicKey) ([]byte, error) {
 	ciphertext, err := rsa.EncryptOAEP(
 		sha256.New(),
@@ -153,6 +161,7 @@ func WrapSymmetricKey(symmetricKey []byte, recipientPubKey *rsa.PublicKey) ([]by
 	return ciphertext, nil
 }
 
+// UnwrapSymmetricKey decrypts the given wrapped symmetric key using the provided RSA private key and password.
 func UnwrapSymmetricKey(privateKeyFilename string, password []byte, wrapped []byte) ([]byte, error) {
 	privKey, err := LoadPrivateKey(privateKeyFilename, password)
 	if err != nil {

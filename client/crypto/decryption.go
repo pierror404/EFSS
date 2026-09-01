@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// Decrypt decrypts the given ciphertext using the provided symmetric key.
 func Decrypt(ciphertext []byte, key []byte) ([]byte, error) {
 	c, err := aes.NewCipher(key)
 	if err != nil {
@@ -28,6 +29,7 @@ func Decrypt(ciphertext []byte, key []byte) ([]byte, error) {
 	return plaintext, nil
 }
 
+// DecryptFile reads the contents of the specified file and decrypts it using the provided symmetric key.
 func DecryptFile(filepath string, key []byte) ([]byte, error) {
 	ciphertext, err := os.ReadFile(filepath)
 	if err != nil {

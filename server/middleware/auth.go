@@ -16,6 +16,7 @@ const (
 	TokenKey    contextKey = "token"
 )
 
+// RequireAuth is a middleware that checks for a valid authentication token in the request header.
 func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
@@ -48,11 +49,13 @@ func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// Username retrieves the username from the request context.
 func Username(r *http.Request) string {
 	username, _ := r.Context().Value(UsernameKey).(string)
 	return username
 }
 
+// Token retrieves the token from the request context.
 func Token(r *http.Request) string {
 	token, _ := r.Context().Value(TokenKey).(string)
 	return token

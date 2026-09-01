@@ -6,6 +6,9 @@ import (
 	"os"
 )
 
+// ExtractAndVerifyFile verifies the signature of the specified signed file using the provided public key.
+// If the signature is valid, it decrypts the content using the provided symmetric key (if any)
+// and writes the decrypted content to a new file with the original filename.
 func ExtractAndVerifyFile(signedFilename string, publicKey *rsa.PublicKey, symmetricKey []byte) error {
 	signedFile, err := VerifyFile(signedFilename, publicKey)
 	if err != nil {

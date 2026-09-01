@@ -9,18 +9,7 @@ import (
 	"efss-server/middleware"
 )
 
-type RecipientKey struct {
-	Username              string `json:"username"`
-	EncryptedSymmetricKey string `json:"encrypted_symmetric_key"` // base64
-}
-
-type SendRequest struct {
-	Filename      string         `json:"filename"`
-	EncryptedBlob string         `json:"encrypted_blob"` // base64
-	Signature     string         `json:"signature"`      // base64
-	Recipients    []RecipientKey `json:"recipients"`
-}
-
+// SendMessage handles the sending of a message to multiple recipients.
 func SendMessage(w http.ResponseWriter, r *http.Request) {
 	sender := middleware.Username(r)
 
@@ -87,12 +76,7 @@ func SendMessage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-type InboxItem struct {
-	MessageID int    `json:"message_id"`
-	Sender    string `json:"sender"`
-	Filename  string `json:"filename"`
-}
-
+// Inbox handles the retrieval of messages in the user's inbox.
 func Inbox(w http.ResponseWriter, r *http.Request) {
 	username := middleware.Username(r)
 
@@ -127,14 +111,7 @@ func Inbox(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(items)
 }
 
-type DownloadResponse struct {
-	Sender                string `json:"sender"`
-	Filename              string `json:"filename"`
-	EncryptedBlob         string `json:"encrypted_blob"`
-	Signature             string `json:"signature"`
-	EncryptedSymmetricKey string `json:"encrypted_symmetric_key"`
-}
-
+// Download handles the downloading of a message for a recipient.
 func Download(w http.ResponseWriter, r *http.Request) {
 	username := middleware.Username(r)
 	messageID := r.PathValue("id")
@@ -162,7 +139,7 @@ func Download(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(resp)
 
-	// segna come consegnato
+	// Mark the message as delivered
 	db.DB.Exec(
 		`UPDATE message_recipients SET delivered = TRUE, delivered_at = CURRENT_TIMESTAMP
 		 WHERE message_id = $1 AND recipient_username = $2`,

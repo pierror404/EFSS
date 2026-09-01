@@ -9,6 +9,7 @@ import (
 
 var DB *sql.DB
 
+// Init initializes the database connection using the provided connection string.
 func Init(connString string) error {
 	var err error
 	DB, err = sql.Open("pgx", connString)

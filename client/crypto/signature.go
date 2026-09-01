@@ -13,10 +13,7 @@ import (
 	"path/filepath"
 )
 
-/*
- * SIGN
- */
-
+// Sign signs the given data using the provided RSA private key and returns the signature.
 func Sign(data []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
 	hash := sha256.Sum256(data)
 
@@ -38,6 +35,9 @@ func Sign(data []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
 	return signature, nil
 }
 
+// SignFile signs the content of the specified input file
+// using the provided RSA private key and writes the signed
+// content to the specified output file.
 func SignFile(inputFilename string, outputFilename string, privateKey *rsa.PrivateKey) error {
 
 	// file content

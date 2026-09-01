@@ -11,8 +11,8 @@ type Credentials struct {
 	Token    string `json:"token"`
 }
 
-// SaveToken salva username e token localmente, con permessi
-// ristretti (solo il proprietario può leggerlo).
+// SaveToken saves locally username and token, with restricted
+// permissions (only the owner can read it).
 func SaveToken(username, token string) error {
 	path, err := CredentialsPath()
 	if err != nil {
@@ -25,11 +25,11 @@ func SaveToken(username, token string) error {
 		return err
 	}
 
-	return os.WriteFile(path, data, 0600) // 0600: solo il proprietario può leggere/scrivere
+	return os.WriteFile(path, data, 0600) // 0600: only the owner can read/write
 }
 
-// LoadToken legge il token salvato localmente. Ritorna errore
-// se l'utente non ha ancora fatto login.
+// LoadToken reads the saved token. Returns an error
+// if the user has not logged in yet.
 func LoadToken() (string, error) {
 	creds, err := LoadCredentials()
 	if err != nil {
@@ -60,7 +60,7 @@ func LoadCredentials() (*Credentials, error) {
 	return &creds, nil
 }
 
-// ClearToken cancella le credenziali salvate localmente (usato dal logout).
+// ClearToken clears the saved credentials (used by logout).
 func ClearToken() error {
 	path, err := CredentialsPath()
 	if err != nil {

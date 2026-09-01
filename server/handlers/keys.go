@@ -7,11 +7,7 @@ import (
 	"efss-server/db"
 )
 
-type PublicKeyResponse struct {
-	Username  string `json:"username"`
-	PublicKey string `json:"public_key"`
-}
-
+// GetPublicKey handles the retrieval of a user's public key.
 func GetPublicKey(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("username")
 

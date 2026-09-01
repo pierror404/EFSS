@@ -47,6 +47,7 @@ func showKeyToUser(key []byte) error {
 	return nil
 }
 
+// encrypt represents the encrypt command.
 var encrypt = &cobra.Command{
 	Use:   "encrypt <filenames> [flags]",
 	Short: "Encrypt one or more file (separated by ,) by AES-256",

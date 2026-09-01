@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// Encrypt encrypts the given plaintext using the provided symmetric key.
 func Encrypt(plaintext []byte, key []byte) ([]byte, error) {
 	c, err := aes.NewCipher(key)
 	if err != nil {
@@ -24,6 +25,7 @@ func Encrypt(plaintext []byte, key []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
+// EncryptFile reads the contents of the specified file and encrypts it using the provided symmetric key.
 func EncryptFile(filepath string, key []byte) ([]byte, error) {
 	text, err := os.ReadFile(filepath)
 	if err != nil {

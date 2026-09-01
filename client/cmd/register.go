@@ -42,15 +42,12 @@ var registerCmd = &cobra.Command{
 		if string(password) != string(passwordConfirm) {
 			return fmt.Errorf("Error: Passwords do not match: %w", err)
 		}
-		// Here you would add logic to register the user with the provided username and password.
-		// Logic to generate a key pair and store it securely would also be added here.
-		// Private key must be stored securely on the client side, while the public key can be sent to the server for user registration.
+
 		path, err := conf.ConfigDir()
 		if err != nil {
 			return fmt.Errorf("Error configuring keys: %w", err)
 		}
-		// Generate key pair and save to path
-		// For demonstration purposes, we will just create empty files for the keys.
+
 		pathToKeys := filepath.Join(path, "keys")
 		err = os.MkdirAll(pathToKeys, 0700)
 		if err != nil {

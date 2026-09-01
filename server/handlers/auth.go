@@ -13,32 +13,20 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-type RegisterRequest struct {
-	Username  string `json:"username"`
-	Password  string `json:"password"`
-	PublicKey string `json:"public_key"` // base64
-}
-
-type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type LoginResponse struct {
-	Token string `json:"token"`
-}
-
+// generateSalt generates a random salt for password hashing.
 func generateSalt() string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	return base64.StdEncoding.EncodeToString(b)
 }
 
+// hashPassword hashes the given password with the provided salt using Argon2id.
 func hashPassword(password, salt string) string {
 	hash := argon2.IDKey([]byte(password), []byte(salt), 1, 64*1024, 4, 32)
 	return base64.StdEncoding.EncodeToString(hash)
 }
 
+// Register handles user registration requests.
 func Register(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -61,6 +49,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// Login handles user login requests.
 func Login(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	json.NewDecoder(r.Body).Decode(&req)
@@ -96,6 +85,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(LoginResponse{Token: token})
 }
 
+// Logout handles user logout requests.
 func Logout(w http.ResponseWriter, r *http.Request) {
 	token := middleware.Token(r)
 

@@ -27,7 +27,6 @@ var receiveCmd = &cobra.Command{
 			return fmt.Errorf("Invalid message id: %w", err)
 		}
 
-		// 1. Scarica il messaggio dal server
 		result, err := api.DownloadMessage(messageID)
 		if err != nil {
 			return fmt.Errorf("Error: %w", err)
@@ -37,7 +36,7 @@ var receiveCmd = &cobra.Command{
 		signature, _ := base64.StdEncoding.DecodeString(result.Signature)
 		encryptedKey, _ := base64.StdEncoding.DecodeString(result.EncryptedSymmetricKey)
 		fmt.Println("Encrypted key len: ", len(encryptedKey))
-		// 2. Decifra la chiave simmetrica con la propria chiave privata locale
+
 		fmt.Printf("Password: ")
 		password, err := term.ReadPassword(int(os.Stdin.Fd()))
 		if err != nil {
@@ -54,13 +53,12 @@ var receiveCmd = &cobra.Command{
 			return fmt.Errorf("Key decryption error: %w", err)
 		}
 		fmt.Println("DEBUG symmetricKey length:", len(symmetricKey))
-		// 3. Decifra il file
+
 		fileData, err := crypto.Decrypt(encryptedBlob, symmetricKey)
 		if err != nil {
 			return fmt.Errorf("File decryption error: %w", err)
 		}
 
-		// 4. Verifica la firma del mittente
 		senderPubKeyB64, err := api.GetPublicKey(result.Sender)
 		if err != nil {
 			return fmt.Errorf("Unable to get sender key: %w", err)
@@ -74,7 +72,6 @@ var receiveCmd = &cobra.Command{
 			return fmt.Errorf("Invalid signature: the might have been changed: %w", err)
 		}
 
-		// 5. Salva il file decifrato
 		outPath := outputPath
 		if outPath == "" {
 			outPath = result.Filename
